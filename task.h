@@ -30,46 +30,64 @@ public:
      	}
 
 		bool extension(int dtime) {     // продление времени
-			if ((time + dtime) >= 0) {
+	
+				
+				if (((time+dtime) / 100000000) != 0) {
+					 return false;
+				}
 				time += dtime;
+				int day = (time % 100), month = ((time / 100) % 100), year = time / 10000;
+				if (day > 28) 
+				{
+					if (month > 12) {
+						year += 1;
+						month -= 12;
+					}
+					if (month == 2 && year % 4 != 0)
+					{
+					    day -= 28;
+						if (day > 31) {
+							day -= 31;
+							month += 2;
+						}
+						else month += 1;
+					}
+					else if (day>29 && month == 2 && year % 4 == 0) {
+						day -= 29;
+						if (day > 31) {
+							day -= 31;
+							month += 2;
+						}
+						else month += 1;
+					}
+					else if (day>30 && (month == 4 || month == 6 || month == 9 || month == 11))
+					{
+						day -= 30;
+						if (day > 31) {
+							day -= 31;
+							month += 2;
+						}
+						else month += 1;
+					}
+					else if (day > 31 && month == 12)
+					{
+						day -= 31;
+					    month = 1;
+						year += 1;
+					}
+					else if(day>31) {
+						day -= 31;
+						month += 1;
+					}
+			
+				}
+				else if (month > 12) {
+					year += 1;
+					month -= 12;
+				}
+				time = (year* 10000)+ (month * 100) +day;
 				return true;
-			}
-			else { return false; }
 		}
-
-		//bool extension(int dtime) {     // продление времени
-		//	int next_day = 0, next_month=0, next_year = 0;
-		//	
-		//	next_day = (time %100)+ (dtime % 100);
-		//	next_month = ((time / 100) % 100) + ((dtime / 100) % 100);
-		//	next_year = (time / 10000)+ (dtime / 10000);
-		//	if (*next_day >= 29 && *next_month == 2 && *next_year % 4 != 0)
-		//	{
-		//		next_day -= ;
-		//		*next_month += 1;
-		//	}
-		//	if (*next_day == 31 && (*next_month == 4 || *next_month == 6 || *next_month == 9 || *next_month == 11))
-		//	{
-		//		*next_day = 1;
-		//		*next_month += 1;
-		//	}
-		//	if (*next_day == 32)
-		//	{
-		//		if (*next_month == 12)
-		//		{
-		//			*next_day = 1;
-		//			*next_month = 1;
-		//			*next_year += 1;
-		//		}
-		//		else
-		//		{
-		//			*next_day = 1;
-		//			*next_month += 1;
-		//		}
-		//	}
-		//}
-
-
 
 		virtual bool miss() = 0;
 
@@ -81,7 +99,7 @@ public:
 			else { return false; }
 		}   
 		virtual void print() const =0;
-		//virtual void print_file(std::ofstream file) const = 0;
+		virtual void print_file(std::ofstream & file) const = 0;
 		virtual Task* clone() const = 0;
 		virtual ~Task() {}
 		bool operator <(const Task &t) const {

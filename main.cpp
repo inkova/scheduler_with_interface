@@ -17,52 +17,6 @@ using std::cin;
 #include "task_period.h"
 #include "scheduler_tree.h"
 
-int er_answer(int max_num)
-{
-	char letter;
-	int answer;
-	char letter_string[2], *i;
-	i = letter_string;
-	scanf_s("%c", &letter, 1);
-	while (letter == ' ' && letter != '\n') scanf_s("%c", &letter, 1);
-
-	if (isdigit(letter))
-	{
-		*i = letter;
-		i++;
-		*i = '\0';
-
-		answer = atoi(letter_string);
-		if ((answer) < (max_num + 1) && (answer) > 0) {
-			scanf_s("%c", &letter, 1);
-
-			while (letter == ' ') scanf_s("%c", &letter, 1);
-
-			if (letter == '\n') return answer;
-			else
-			{
-				printf("Incorrect answer. Enter from 1 to %d\n", max_num);
-				while (letter != '\n') scanf_s("%c", &letter, 1);
-				return 0;
-			}
-
-		}
-		else {
-			printf("Incorrect answer. Enter from 1 to %d\n", max_num);
-			while (letter != '\n') scanf_s("%c", &letter, 1);
-			return 0;
-		}
-	}
-	else
-	{
-		printf("Incorrect answer.Enter from 1 to %d\n", max_num);
-		while (letter != '\n') scanf_s("%c", &letter, 1);
-		return 0;
-	}
-	return 0;
-
-}
-
 int answer_smaller(int max_num)
 {
 	string tmp;
@@ -80,8 +34,6 @@ int answer_smaller(int max_num)
 	return num;
 
 }
-
-
 
 bool get_int(int* num)
 {
@@ -138,23 +90,43 @@ int get_correct_day(int year, int month) {
 	return day;
 }
 
-int input_time(int ch)
+int input_time_period(int ch)
+{
+	int time = 0, for_time = 0;
+	if(ch) printf("\nafter how many YEARS should the task be repeated?  ");
+	else printf("\nfor how many YEARS should the deadline be extended?  ");
+	while (!(get_int(&for_time)) || for_time > 9999) printf("Wrong input. Enter from 0 to 9999\n");
+	time = for_time * 10000;
+
+	if (ch) printf("\nafter how many MONTHS should the task be repeated?  ");
+	else printf("\nfor how many MONTHS should the deadline be extended?  ");
+	while (!(get_int(&for_time)) || for_time > 12) printf("Wrong input. Enter from 0 to 12\n");
+	time += for_time * 100;
+
+	if (ch) printf("\nafter how many DAYS should the task be repeated?  ");
+	else printf("\nfor how many DAYS should the deadline be extended?  ");
+	while (!(get_int(&for_time)) && for_time > 31) printf("Wrong input. Enter from 0 to 31\n");
+	time += for_time;
+	return time;
+}
+
+
+
+
+int input_time()
 {
 	int time=0, for_time = 0;
-	if(ch) printf("\nenter the YEAR of completion task  ");
-	else printf("\nafter how many YEARS should the task be repeated?  ");
+    printf("\nenter the YEAR of completion task  ");
 	for_time = answer_smaller(9999);
 	while (!for_time) for_time = answer_smaller(9999);
 	time = for_time * 10000;
 
-	if (ch)printf("\nenter the MONTH of completion task  ");
-	else printf("\nafter how many MONTHS should the task be repeated?  ");
+	printf("\nenter the MONTH of completion task  ");
 	for_time = answer_smaller(12);
 	while (!for_time) for_time = answer_smaller(12);
 	time += for_time * 100;
 
-	if (ch)printf("\nenter the DAY of completion task  ");
-	else printf("\nafter how many DAYS should the task be repeated?  ");
+    printf("\nenter the DAY of completion task  ");
 	for_time = get_correct_day(time / 10000, for_time);
 	time += for_time;
 	return time;
@@ -170,8 +142,8 @@ int main() {
 	while (1)
 	{
 		printf("\nWelcome to the scheduler!\n\n1)input task\n2)input task(s) from file\n3)show database\n4)print task by name\n5)delete task by name\n6)delete all database\n7)change importance by name\n8)print earliest task\n9)Exit\n\nWhat do you want to do?(enter the desired digit) : ");
-		selector = answer_smaller(9);
-		while (!selector)  selector = answer_smaller(9); 
+		selector = answer_smaller(13);
+		while (!selector)  selector = answer_smaller(13); 
 		printf("\n");
 		switch (selector)
 		{
@@ -198,7 +170,7 @@ int main() {
 			}
 
 			printf("\ninput TIME of task\n ");
-			time = input_time(1);
+			time = input_time();
 
 			printf("\ninput IMPORTANCE of task   ");
 			while (!(get_int(&importance))) printf("Wrong input. Enter a positive integer or 0.");
@@ -212,7 +184,7 @@ int main() {
 			}
 			else {
 				printf("\ninput PERIOD of task\n");
-				period = input_time(0);
+				period = input_time_period(1);
 				tp = new Task_period(name, data, importance, time, period);
 				tp->print();
 				sch.add(tp);
@@ -291,16 +263,16 @@ int main() {
 			printf("\nDatabase:\n");
 			sch.show();
 			break; }
-		/*case 11: {
+		case 11: {
 			printf("\ninput name of file\n");
 			name.clear();
 			getline(cin, name);
 			while (name.empty()) {
-				printf("\n22input name of file\n");
+				printf("\ninput name of file\n");
 				getline(cin, name);
 			}
 			sch.show_file(name);
-			break; }*/
+			break; }
 		case 6: {
 			sch.delete_all_tree();
 			break; }
@@ -329,22 +301,36 @@ int main() {
 			break; }
 
 
-		/*case 5: {
+		case 10: {
 			printf("\ninput name of task\n");
 			name.clear();
 			getline(cin, name);
 			while (name.empty()) {
-				printf("\ninput name of task to print\n");
+				printf("\ninput name of task to extend\n");
 				getline(cin, name);
 			}
-			printf("\nenter how long do you want to extend\n");
-			while (!(get_int(&i))) printf("Wrong input. Enter a positive integer or 0.");
 			Task * result_of_search = nullptr;
 			sch.search(name, result_of_search);
-			if (result_of_search != nullptr) result_of_search->extension(i);
-			else printf("Task with this name not found\n");
-			break; }*/
-		
+			if (result_of_search == nullptr) {
+				printf("Task with this name not found\n");
+				break;
+			}
+			printf("\nenter how long do you want to extend\n");
+			i = input_time_period(0);
+			if(!(result_of_search->extension(i))) printf("\nThe deadline for completing the task cannot be extended. After the extension, the year becomes a five-digit number. The program only works over the years, which are four-digit numbers.\n");
+			break; }
+
+		case 12: {
+			printf("\ninput name of task\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of task to extend\n");
+				getline(cin, name);
+			}
+			sch.perform(name);
+			break; }
+
 		case 7: {
 			printf("\ninput name of task\n");
 			name.clear();
@@ -362,6 +348,16 @@ int main() {
 			break; }
 		case 8: {
 			sch.print_first();
+			break; }
+		case 13: {
+			printf("\ninput name of file\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of file\n");
+				getline(cin, name);
+			}
+			sch.print_first_file(name);
 			break; }
 		case 9: { return 0; break; }
 		

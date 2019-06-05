@@ -10,7 +10,7 @@ public:
 		:Task(name, data, imp, time) {}
 
 	void print() const;
-	//void print_file(std::ofstream file) const;
+	void print_file(std::ofstream & file) const;
 	Task_once* clone() const { return new Task_once(*this); }
 
 	bool miss() {

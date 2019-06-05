@@ -13,7 +13,7 @@ public :
 		return period;
 	}
 	void print() const;
-	//void print_file(std::ofstream file) const;
+	void print_file(std::ofstream & file) const;
 	
 	Task_period* clone() const { return new Task_period(*this); }
 

@@ -56,6 +56,7 @@ public:
 	void delete_one_task(const string& name_task);
 	void perform(const string& name_task);
 	void print_first();
+	void print_first_file(string name);
 
 	~Scheduler() {
 		delete_all_tree();

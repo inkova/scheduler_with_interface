@@ -86,37 +86,38 @@ void Scheduler::show () {
     }
 }
 
-//void Scheduler::show_file(std::string name) {
-//	Node* scheduler_top = this->scheduler_top;
-//	ofstream file(name);
-//	if (!file) {
-//		cout << "File " << name << " can not be open.\n";
-//		return;
-//	}
-//	if (scheduler_top == nullptr) {
-//		cout << "\nThere are no tasks in the scheduler.\n";
-//		
-//		return;
-//	}
-//	else while (1)
-//	{
-//		while (scheduler_top->left != nullptr && scheduler_top->is_left_thread == false) { // переходим в самый левый лист
-//			scheduler_top = scheduler_top->left;
-//		}
-//
-//		scheduler_top->task->print_file(file);
-//		while (scheduler_top->is_right_thread == true) {
-//			scheduler_top = scheduler_top->right;
-//			scheduler_top->task->print_file(file);
-//		}
-//		if (scheduler_top->right != nullptr)
-//			scheduler_top = scheduler_top->right;
-//		else {
-//			
-//			return;
-//		}
-//	}
-//}
+void Scheduler::show_file(std::string name) {
+	Node* scheduler_top = this->scheduler_top;
+	ofstream file(name);
+	if (!file) {
+		cout << "File " << name << " can not be open.\n";
+		return;
+	}
+
+	if (scheduler_top == nullptr) {
+		cout << "\nThere are no tasks in the scheduler.\n";
+		file.close();
+		return;
+	}
+	else while (1)
+	{
+		while (scheduler_top->left != nullptr && scheduler_top->is_left_thread == false) { // переходим в самый левый лист
+			scheduler_top = scheduler_top->left;
+		}
+
+		scheduler_top->task->print_file(file);
+		while (scheduler_top->is_right_thread == true) {
+			scheduler_top = scheduler_top->right;
+			scheduler_top->task->print_file(file);
+		}
+		if (scheduler_top->right != nullptr)
+			scheduler_top = scheduler_top->right;
+		else {
+			file.close();
+			return;
+		}
+	}
+}
 
 //void Scheduler::print_file(Node* scheduler_top, std::ofstream file) {
 //	if (scheduler_top == nullptr)
@@ -199,7 +200,7 @@ void Scheduler:: delete_all_tree (Node*& scheduler_top) {
 			else {
 				delete scheduler_top;
 				scheduler_top = nullptr;
-				cout << "\nComplete tree removal is finished.\n";
+				//cout << "\nComplete tree removal is finished.\n";
 				return;
 			}
 		}
@@ -350,5 +351,29 @@ void Scheduler::print_first() {
 
 		scheduler_top->task->print();
 	}
+	return;
+}
+
+void Scheduler::print_first_file(std::string name) {
+	Node* scheduler_top = this->scheduler_top;
+	ofstream file(name);
+	if (!file) {
+		cout << "File " << name << " can not be open.\n";
+		return;
+	}
+
+	if (scheduler_top == nullptr) {
+		cout << "\nThere are no tasks in the scheduler.\n";
+		return;
+	}
+	else
+	{
+		while (scheduler_top->left != nullptr && scheduler_top->is_left_thread == false) { // переходим в самый левый лист
+			scheduler_top = scheduler_top->left;
+		}
+
+		scheduler_top->task->print_file(file);
+	}
+	file.close();
 	return;
 }
