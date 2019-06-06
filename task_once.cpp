@@ -15,6 +15,6 @@ void Task_once::print_file(std:: ofstream & file) const {
 	
 	file << "Task is called " << get_name() << "\nwith data " << get_data()
 		<< ".\nIts importance is " << get_imp()
-		<< "\nand its time is " << (get_time() % 100) << "." << ((get_time() / 100) % 100) << "." << (get_time() / 10000) << endl;
+		<< "\nand its time is " << (get_time() % 100) << "." << ((get_time() / 100) % 100) << "." << (get_time() / 10000) << endl << endl;
 	
 }

@@ -17,6 +17,21 @@ using std::cin;
 #include "task_period.h"
 #include "scheduler_tree.h"
 
+int skip(int j, ifstream & file)
+{
+	int i;
+	char ch;
+	for (i = 0; i < j; i++)
+	{
+		if (!file.eof()) {
+			ch = file.get(); printf("%c\n", ch);
+		}
+		else return 0;
+	}
+	return 1;
+}
+
+
 int answer_smaller(int max_num)
 {
 	string tmp;
@@ -134,6 +149,7 @@ int input_time()
 
 int main() {
 	int selector, i;
+	char ch;
 	string name, data, tmp;
 	int time = 0, importance = 0, period = 0, for_time=0;
 	Task_once *to;
@@ -197,7 +213,7 @@ int main() {
 			name.clear();
 			getline(cin, name);
 			while (name.empty()) {
-				printf("\n22input name of file\n");
+				printf("\ninput name of file\n");
 				getline(cin, name);
 			}
 			ifstream file(name);
@@ -205,16 +221,27 @@ int main() {
 				cout << "File " << name << " can not be open.\n";
 				break;
 			}
-			name.clear();
-			while (getline(file, name)) {
+			
+			while (!file.eof()){
+				skip(15, file);
+				name.clear();
+				getline(file, name);
+				skip(10, file);
 				data.clear();
 				getline(file, data);
 				
+				skip(18, file);
+				tmp.clear();
+				getline(file, tmp);
+				importance = atoi(tmp.c_str());
+
+				skip(12, file);
 				tmp.clear();
 				time = 0;
 				getline(file, tmp, '.');
 				for_time = atoi(tmp.c_str());
 				time = for_time;
+				printf("%d\n", time);
 
 				tmp.clear();
 				getline(file, tmp, '.');
@@ -226,33 +253,37 @@ int main() {
 				for_time = atoi(tmp.c_str());
 				time += for_time * 10000;
 
-			    tmp.clear();
-				getline(file, tmp);
-				importance = atoi(tmp.c_str());
-
-				tmp.clear();
-				getline(file, tmp);
-				i = atoi(tmp.c_str());
-				if (i == 2) {
+				//tmp.clear();
+				//getline(file, tmp);
+				//i = atoi(tmp.c_str());
+				ch = file.get();
+				if(ch=='\n')
+				 {
+					printf("aaa");
 					to = new Task_once(name, data, importance, time);
 					//to->print();
 					sch.add(to);
 				}
 				else {
+					printf("bb");
+					skip(17, file);
 					tmp.clear();
-					getline(file, tmp, '.');
+					getline(file, tmp, ' ');
 					for_time = atoi(tmp.c_str());
 					period = for_time;
 
+					skip(7, file);
 					tmp.clear();
-					getline(file, tmp, '.');
+					getline(file, tmp, ' ');
 					for_time = atoi(tmp.c_str());
 					period += for_time * 100;
 
+					skip(9, file);
 					tmp.clear();
 					getline(file, tmp);
 					for_time = atoi(tmp.c_str());
 					period += for_time * 10000;
+					skip(8, file);
 					tp = new Task_period(name, data, importance, time, period);
 					//tp->print();
 					sch.add(tp);

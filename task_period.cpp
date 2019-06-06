@@ -20,5 +20,5 @@ void Task_period::print_file(std::ofstream &file) const {
 		<< ".\nIts importance is " << get_imp()
 		<< ",\nits time is " << (get_time() % 100) << "." << ((get_time() / 100) % 100) << "." << (get_time() / 10000)
 		<< "\nand its period is " << (get_period() % 100) << " day(s) " << ((get_period() / 100) % 100) << " month(s) " << (get_period() / 10000) << " year(s)"
-		<< endl;
+		<< endl << endl;
 }
