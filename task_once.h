@@ -17,6 +17,10 @@ public:
 		return false;
 	}
 
+
+	bool change_period(int dper) {
+		return false;
+	}
 };
 
 #endif

@@ -89,7 +89,14 @@ public:
 				return true;
 		}
 
+		void change_data(std::string ddata) {     // изменение важности
+			
+			data = ddata;
+		}
+
 		virtual bool miss() = 0;
+
+		virtual bool change_period(int dper) = 0;
 
 		bool change_imp(int dimp) {     // изменение важности
 			if (dimp >= 0) {
@@ -98,6 +105,13 @@ public:
 			}
 			else { return false; }
 		}   
+
+		void change_time(int dtime) {     // изменение времени
+			
+				time = dtime;
+				return;
+		}
+
 		virtual void print() const =0;
 		virtual void print_file(std::ofstream & file) const = 0;
 		virtual Task* clone() const = 0;

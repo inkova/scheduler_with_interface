@@ -5,7 +5,16 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <map>
+#include <utility>
+#include <vector>
+#include "sch_mode.h"
 
+using std::multimap;
+using std::pair;
+
+using std::vector;
+using std::shared_ptr;
 using namespace std;
 using std::string;
 using std::endl;
@@ -147,6 +156,58 @@ int input_time()
 	return time;
 }
 
+
+
+/*void scheduler_mode() {
+	Scheduler_mode  sch_m = Scheduler_mode();
+	Sched * sched_p;
+
+	multimap <int, string> mmTask1;
+	vector<int>;
+	string name;
+	int selector, time_f = 0, time_f_tmp = 0, time_t = 0, time_t_tmp = 0;
+	while (1)
+	{
+		printf("\n1)input task\n2)input task(s) from file\n3)show result\n4)print result to file\n5)exit to main menu\n\nWhat do you want to do?(enter the desired digit) : ");
+		selector = answer_smaller(5);
+		while (!selector)  selector = answer_smaller(5);
+		printf("\n");
+		switch (selector)
+		{
+		case 1: {
+			printf("input task:\ninput NAME of task   ");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput NAME of task   ");
+				getline(cin, name);
+			}
+
+			printf("input BEGINNING of task\nHOUR   ");
+			while (!(get_int(&time_f_tmp)) && time_f_tmp > 23) printf("Wrong input. Enter from 0 to 23\n");
+			time_f = time_f_tmp * 60;
+			time_f_tmp = 0;
+			printf("\nMINUTE   ");
+			while (!(get_int(&time_f_tmp)) && time_f_tmp > 59) printf("Wrong input. Enter from 0 to 59\n");
+			time_f += time_f_tmp;
+
+			printf("input END of task\nHOUR   ");
+			while (!(get_int(&time_t_tmp)) && time_t_tmp > 23) printf("Wrong input. Enter from 0 to 23\n");
+			time_t = time_t_tmp * 60;
+			time_t_tmp = 0;
+			printf("\nMINUTE   ");
+			while (!(get_int(&time_t_tmp)) && time_t_tmp > 59) printf("Wrong input. Enter from 0 to 59\n");
+			time_t += time_t_tmp;
+
+			sched_p = new Sched(name, time_f, time_t);
+			sch_m.insert(sched_p);
+			break; }
+		}
+	}
+
+*/
+
+
 int main() {
 	int selector, i;
 	char ch;
@@ -157,9 +218,9 @@ int main() {
 	Scheduler  sch = Scheduler();
 	while (1)
 	{
-		printf("\nWelcome to the scheduler!\n\n1)input task\n2)input task(s) from file\n3)show database\n4)print task by name\n5)delete task by name\n6)delete all database\n7)change importance by name\n8)print earliest task\n9)Exit\n\nWhat do you want to do?(enter the desired digit) : ");
-		selector = answer_smaller(13);
-		while (!selector)  selector = answer_smaller(13); 
+		printf("\nWelcome to the scheduler!\n\n1)input task\n2)input task(s) from file\n3)show database\n4)print task by name\n5)delete task by name\n6)delete all database\n7)change importance by name\n8)print earliest task\n9)Exit\n10)extend the deadline for the task\n11)print database to file\n12)perform a task\n13)print the earliest task to file\n14)change task execution time\n\nWhat do you want to do?(enter the desired digit) : ");
+		selector = answer_smaller(16);
+		while (!selector)  selector = answer_smaller(16); 
 		printf("\n");
 		switch (selector)
 		{
@@ -241,7 +302,7 @@ int main() {
 				getline(file, tmp, '.');
 				for_time = atoi(tmp.c_str());
 				time = for_time;
-				printf("%d\n", time);
+				
 
 				tmp.clear();
 				getline(file, tmp, '.');
@@ -259,18 +320,17 @@ int main() {
 				ch = file.get();
 				if(ch=='\n')
 				 {
-					printf("aaa");
 					to = new Task_once(name, data, importance, time);
 					//to->print();
 					sch.add(to);
 				}
 				else {
-					printf("bb");
-					skip(17, file);
+					skip(13, file);
 					tmp.clear();
 					getline(file, tmp, ' ');
 					for_time = atoi(tmp.c_str());
 					period = for_time;
+					printf("\n\n%d\n", period);
 
 					skip(7, file);
 					tmp.clear();
@@ -356,7 +416,7 @@ int main() {
 			name.clear();
 			getline(cin, name);
 			while (name.empty()) {
-				printf("\ninput name of task to extend\n");
+				printf("\ninput name of task\n");
 				getline(cin, name);
 			}
 			sch.perform(name);
@@ -367,15 +427,19 @@ int main() {
 			name.clear();
 			getline(cin, name);
 			while (name.empty()) {
-				printf("\ninput name of task to print\n");
+				printf("\ninput name of task\n");
 				getline(cin, name);
+			}
+			
+			Task * result_of_search = nullptr;
+			sch.search(name, result_of_search);
+			if (result_of_search == nullptr) {
+				printf("Task with this name not found\n");
+				break;
 			}
 			printf("\ninput new importance\n");
 			while (!(get_int(&i))) printf("Wrong input. Enter a positive integer or 0.");
-			Task * result_of_search = nullptr;
-			sch.search(name, result_of_search);
-			if (result_of_search != nullptr) result_of_search->change_imp(i);
-			else printf("Task with this name not found\n");
+			result_of_search->change_imp(i);
 			break; }
 		case 8: {
 			sch.print_first();
@@ -391,7 +455,73 @@ int main() {
 			sch.print_first_file(name);
 			break; }
 		case 9: { return 0; break; }
-		
+		case 14: {
+			printf("\ninput name of task\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of task\n");
+				getline(cin, name);
+			}
+
+			Task * result_of_search = nullptr;
+			sch.search(name, result_of_search);
+			if (result_of_search == nullptr) {
+				printf("Task with this name not found\n");
+				break;
+			}
+			printf("\ninput new time\n");
+			i = input_time();
+			result_of_search->change_time(i);
+			break; }
+		case 15: {
+			printf("\ninput name of task\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of task\n");
+				getline(cin, name);
+			}
+
+			Task * result_of_search = nullptr;
+			sch.search(name, result_of_search);
+			if (result_of_search == nullptr) {
+				printf("Task with this name not found\n");
+				break;
+			}
+			printf("\ninput new period\n");
+			i = input_time_period(0);
+			if (!(result_of_search->change_period(i))) printf("This task is not periodic, therefore its period cannot be changed.");
+			break; }
+	   
+	    case 16: {
+		   printf("\ninput name of task\n");
+		   name.clear();
+		   getline(cin, name);
+		   while (name.empty()) {
+			   printf("\ninput name of task\n");
+			   getline(cin, name);
+		   }
+
+		   Task * result_of_search = nullptr;
+		   sch.search(name, result_of_search);
+		   if (result_of_search == nullptr) {
+			   printf("Task with this name not found\n");
+			   break;
+		   }
+		   printf("\ninput new data\n");
+		   data.clear();
+		   getline(cin, data);
+		   while (data.empty()) {
+			   printf("\ninput new data\n");
+			   getline(cin, data);
+		   }
+		   result_of_search->change_data(data);
+		   break; }
+		case 17: {
+			printf("Welcome to the scheduler mode.\n\nHere you can enter the name of the tasks, their beginning and end, and get a list of the maximum number of tasks that you can attend from the entered list without crossing the time.\n");
+
+			break; }
 	   }
 	
 	}

@@ -22,5 +22,10 @@ public :
 		return true;
 	}
 
+	bool change_period(int dper) {
+		period = dper;
+		return true;
+	}
+
 };
 #endif
