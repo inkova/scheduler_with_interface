@@ -365,6 +365,8 @@ void Scheduler::perform(const string& name_task) {
 
 void Scheduler::print_first() {
 	Node* scheduler_top = this->scheduler_top;
+	Node* tmp=scheduler_top;
+	int time;
 
 	if (scheduler_top == nullptr) {
 		cout << "\nThere are no tasks in the scheduler.\n";
@@ -372,11 +374,33 @@ void Scheduler::print_first() {
 	}
 	else 
 	{
-		while (scheduler_top->left != nullptr && scheduler_top->is_left_thread == false) { // переходим в самый левый лист
-			scheduler_top = scheduler_top->left;
+		while (tmp->left != nullptr && tmp->is_left_thread == false) { // переходим в самый левый лист
+			tmp = tmp->left;
 		}
 
-		scheduler_top->task->print();
+		tmp->task->print();
+		time= tmp->task->get_time();
+
+		if (tmp->right != nullptr && tmp->is_right_thread == false) {
+			tmp = tmp->right;
+			while (tmp->left != nullptr && tmp->is_left_thread == false) { // переходим в самый левый лист
+				tmp = tmp->left;
+			}
+			if (time == tmp->task->get_time()) {
+				tmp->task->print();
+				if (tmp->right != nullptr && tmp->is_right_thread == false) {
+					tmp = tmp->right;
+				}
+				while (time == tmp->task->get_time()) {
+					tmp->task->print();
+					if (tmp->right != nullptr && tmp->is_right_thread == false) {
+						tmp = tmp->right; 
+						
+					}
+					else return;
+				}
+			}
+		}
 	}
 	return;
 }

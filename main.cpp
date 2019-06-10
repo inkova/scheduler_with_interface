@@ -746,7 +746,7 @@ int main() {
 					sch.add(tp);
 				}
 			}
-			//printf("\nSuccessfully completed.\n");
+			printf("\nSuccessfully completed.\n");
 			getline(cin, tmp);
 			break;}
 		case 3: {
