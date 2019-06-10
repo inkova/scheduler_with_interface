@@ -46,22 +46,22 @@ public:
 		return;
 	}
 
-	/*bool search(const string& name_task, multimap <int, shared_ptr<Sched>> ::iterator & it) {
-		it = mmTask.begin();
+	bool search(const string& name_task, multimap <int, shared_ptr<Sched>> ::iterator & it) {
+		it = mmSched.begin();
 		for (; it != mmSched.end(); it++) {
 			if (it->second->get_name() == name_task) {
 				return true;
 			}
 		}
 		return false;
-	}*/
+	}
 
 	void clean() {
 		mmSched.clear();
 	};
 
 
-	/*void delete_one_sch(const string& name_task) {
+	void delete_one_sch(const string& name_task) {
 
 		multimap <int, shared_ptr<Sched>> ::iterator it = mmSched.end();
 		if (!(search(name_task, it))) {
@@ -70,7 +70,11 @@ public:
 		}
 		mmSched.erase(it);
 		return;
-	};*/
+	};
+
+	bool empty() {
+		return mmSched.empty();
+	}
 
 	void mode(vector < shared_ptr<Sched>> &result) {
 		multimap <int, shared_ptr<Sched>> ::iterator  it, it_tmp;
@@ -91,6 +95,9 @@ public:
 				result.push_back(it->second);
 			
 		}
+	}
+	~Scheduler_mode() {
+		clean();
 	}
 };
 

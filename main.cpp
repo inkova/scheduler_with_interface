@@ -8,7 +8,15 @@
 #include <map>
 #include <utility>
 #include <vector>
+
+
+#include "task_once.h" 
+#include "task.h"
+#include "task_period.h"
+#include "scheduler_tree.h"
 #include "sch_mode.h"
+
+
 
 using std::multimap;
 using std::pair;
@@ -21,19 +29,14 @@ using std::endl;
 using std::cout;
 using std::cin;
 
-#include "task_once.h" 
-#include "task.h"
-#include "task_period.h"
-#include "scheduler_tree.h"
 
 int skip(int j, ifstream & file)
 {
 	int i;
-	char ch;
 	for (i = 0; i < j; i++)
 	{
 		if (!file.eof()) {
-			ch = file.get(); printf("%c\n", ch);
+			file.get(); 
 		}
 		else return 0;
 	}
@@ -57,6 +60,14 @@ int answer_smaller(int max_num)
 	tmp.clear();
 	return num;
 
+}
+
+bool validation_check(int num, int max_num) {
+	if (num == 0 || num < 0 || num > max_num)
+	{
+		return false;
+	}
+	return true;
 }
 
 bool get_int(int* num)
@@ -91,6 +102,25 @@ bool get_int(int* num)
 	return true;
 }
 
+bool check_int(int num, string tmp) {
+	int i = 0;
+	if (num == 0)
+	{
+		while (tmp[i] == ' ') i++;
+		if (tmp[i] == '0') {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	if (num < 0) {
+		
+		return false;
+	}
+	return true;
+}
+
 int get_correct_day(int year, int month) {
 	int day;
 	if ( month == 2 && year % 4 != 0)
@@ -112,6 +142,23 @@ int get_correct_day(int year, int month) {
 		while (!day) day = answer_smaller(31);
 	}
 	return day;
+}
+
+int check_correct_day(int year, int month) {
+	if (month == 2 && year % 4 != 0)
+	{
+		return 28;
+	}
+	else if (month == 2 && year % 4 == 0) {
+		return 29;
+	}
+	else if (month == 4 || month == 6 || month == 9 || month == 11)
+	{
+		return 30;
+	}
+	else {
+		return 31;
+	}
 }
 
 int input_time_period(int ch)
@@ -206,6 +253,214 @@ int input_time()
 	}
 
 */
+int scheduler_mode() {
+	Scheduler_mode  sch_m = Scheduler_mode();
+	Sched * sched_p;
+	vector < shared_ptr<Sched>> result;
+	vector < shared_ptr<Sched>> ::iterator res_it;
+
+	string name, tmp;
+	int selector, time_f = 0, time_f_tmp = 0, time_t = 0, time_t_tmp = 0;
+	while (1)
+	{
+		printf("\n1)input task\n2)input task(s) from file\n3)show result\n4)print result to file\n5)exit to main menu\n\nWhat do you want to do?(enter the desired digit) : ");
+
+		selector = answer_smaller(7);
+		while (!selector)  selector = answer_smaller(7);
+		printf("\n");
+		switch (selector)
+		{
+		case 1: {
+			printf("input task:\ninput NAME of task   ");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput NAME of task   ");
+				getline(cin, name);
+			}
+			do 
+			{
+				if (time_f_tmp) printf("\nThe beginning time of the task should not be longer than the end time of the task\n\n");
+				printf("input BEGINNING of task\nHOUR   ");
+				while (!(get_int(&time_f_tmp)) || time_f_tmp > 23) printf("Wrong input. Enter from 0 to 23\n");
+				time_f = time_f_tmp * 60;
+				time_f_tmp = 0;
+				printf("\nMINUTE   ");
+				while (!(get_int(&time_f_tmp)) || time_f_tmp > 59) printf("Wrong input. Enter from 0 to 59\n");
+				time_f += time_f_tmp;
+
+				printf("input END of task\nHOUR   ");
+				while (!(get_int(&time_t_tmp)) || time_t_tmp > 23) printf("Wrong input. Enter from 0 to 23\n");
+				time_t = time_t_tmp * 60;
+				time_t_tmp = 0;
+				printf("\nMINUTE   ");
+				while (!(get_int(&time_t_tmp)) || time_t_tmp > 59) printf("Wrong input. Enter from 0 to 59\n");
+				time_t += time_t_tmp;
+				time_f_tmp = 1;
+			} while (time_f > time_t);
+			time_f_tmp = 0;
+			sched_p = new Sched(name, time_f, time_t);
+			sch_m.insert(sched_p);
+			break;
+		}
+		case 2: {
+			printf("\ninput name of file\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of file\n");
+				getline(cin, name);
+			}
+			std::ifstream file(name);
+			if (!file) {
+				cout << "File " << name << " can not be open.\n";
+				break;
+			}
+
+			while (!file.eof()) {
+				skip(15, file);
+				name.clear();
+				getline(file, name);
+
+				skip(17, file);
+				tmp.clear();
+				time_f = 0;
+				getline(file, tmp, ':');
+				time_f_tmp = atoi(tmp.c_str());
+				if (!(check_int(time_f_tmp, tmp)) || time_f_tmp > 23) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The HOUR of beginning of task \"" << name << "\" should be from 1 to 23. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
+				time_f = time_f_tmp * 60;
+
+
+				tmp.clear();
+				getline(file, tmp);
+				time_f_tmp = atoi(tmp.c_str());
+				if (!(check_int(time_f_tmp, tmp)) || time_f_tmp > 59) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The MINUTE of beginning of task \"" << name << "\" should be from 1 to 59. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
+				time_f += time_f_tmp;
+
+				skip(11, file);
+				tmp.clear();
+				time_t = 0;
+				getline(file, tmp, ':');
+				time_t_tmp = atoi(tmp.c_str());
+				if (!(check_int(time_t_tmp, tmp)) || time_t_tmp > 23) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The HOUR of end of task \"" << name << "\" should be from 1 to 23. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
+				time_t = time_t_tmp * 60;
+
+				tmp.clear();
+				getline(file, tmp);
+				time_t_tmp = atoi(tmp.c_str());
+				if (!(check_int(time_t_tmp, tmp)) || time_t_tmp > 59) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The MINUTE of end of task \"" << name << "\" should be from 1 to 59. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
+				time_t += time_t_tmp;
+				
+				if (time_f > time_t) {
+					cout <<"\nSorry, but an inaccuracy was found in the file provided for reading. The beginning time of the task \"" << name << "\" should not be longer than the end time of the task\n\n";
+					break;
+				}
+				
+				skip(1, file);
+				sched_p = new Sched(name, time_f, time_t);
+				sch_m.insert(sched_p);
+			}
+			break;
+		}
+
+		case 3: {
+			if (sch_m.empty()) {
+				printf("\nSorry but the base of tasks is empty. Enter the tasks for which you want to calculate the maximum list of tasks.\n");
+				break;
+			}
+			sch_m.show_sch();
+			break;
+		}
+
+		case 4: {
+			if (sch_m.empty()) {
+				printf("\nSorry but the base of tasks is empty. Enter the tasks for which you want to calculate the maximum list of tasks.\n");
+				break;
+			}
+			printf("\ninput name of file\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of file\n");
+				getline(cin, name);
+			}
+			std::ofstream file(name);
+			if (!file) {
+				cout << "File " << name << " can not be open.\n";
+				break;
+			}
+			sch_m.show_sch_file(file);
+			break;
+		}
+
+		case 5: {
+			if (sch_m.empty()) {
+				printf("\nSorry but the base of tasks is empty. Enter the tasks for which you want to calculate the maximum list of tasks.\n");
+				break;
+			}
+			result.clear();
+			sch_m.mode(result);
+			break;
+		}
+		case 6: {//печать информации в векторе
+			if (result.empty()) {
+				printf("\niSorry. The maximum list of non-overlapping tasks is empty. Perhaps you forgot to generate it.\n");
+				break;
+			}
+
+			for (res_it = result.begin(); res_it != result.end(); res_it++) {
+
+				res_it->get()->print();
+			}
+			break;
+		}
+		case 7: { //печать информации в векторе
+			if (result.empty()) {
+				printf("\nSorry. The maximum list of non-overlapping tasks is empty. Perhaps you forgot to generate it.\n");
+				break;
+			}
+			printf("\ninput name of file\n");
+			name.clear();
+			getline(cin, name);
+			while (name.empty()) {
+				printf("\ninput name of file\n");
+				getline(cin, name);
+			}
+			std::ofstream file(name);
+			if (!file) {
+				cout << "File " << name << " can not be open.\n";
+				break;
+			}
+
+			for (res_it = result.begin(); res_it != result.end(); res_it++) {
+
+				res_it->get()->print_file(file);
+			}
+			break;
+		}
+		case 8: {
+			result.clear();
+			sch_m.clean();
+			return 0;
+			break;
+		}
+		}
+	}
+	return 8;
+}
+
 
 
 int main() {
@@ -219,8 +474,8 @@ int main() {
 	while (1)
 	{
 		printf("\nWelcome to the scheduler!\n\n1)input task\n2)input task(s) from file\n3)show database\n4)print task by name\n5)delete task by name\n6)delete all database\n7)change importance by name\n8)print earliest task\n9)Exit\n10)extend the deadline for the task\n11)print database to file\n12)perform a task\n13)print the earliest task to file\n14)change task execution time\n\nWhat do you want to do?(enter the desired digit) : ");
-		selector = answer_smaller(16);
-		while (!selector)  selector = answer_smaller(16); 
+		selector = answer_smaller(17);
+		while (!selector)  selector = answer_smaller(17); 
 		printf("\n");
 		switch (selector)
 		{
@@ -266,7 +521,7 @@ int main() {
 				tp->print();
 				sch.add(tp);
 			}
-
+			printf("\nSuccessfully completed.\n");
 			break; }
 
 		case 2:{
@@ -295,24 +550,42 @@ int main() {
 				tmp.clear();
 				getline(file, tmp);
 				importance = atoi(tmp.c_str());
+				if(!( check_int(importance, tmp) )) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The IMPORTANCE of the task \"" << name << "\" should be a positive integer or 0. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
 
 				skip(12, file);
 				tmp.clear();
 				time = 0;
 				getline(file, tmp, '.');
 				for_time = atoi(tmp.c_str());
+
 				time = for_time;
 				
 
 				tmp.clear();
 				getline(file, tmp, '.');
 				for_time = atoi(tmp.c_str());
+				if (!(validation_check(for_time, 12))) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The MONTH of the deadline for the task \"" << name << "\" should be from 1 to 12. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
 				time += for_time * 100;
 
 				tmp.clear();
 				getline(file, tmp);
 				for_time = atoi(tmp.c_str());
+				if (!(validation_check(for_time, 9999))) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The YEAR of the deadline for the task \"" << name << "\" should be from 1 to 9999. Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}
 				time += for_time * 10000;
+
+				if (!(validation_check((time % 100), check_correct_day( (time / 10000), ((time / 100) % 100) ) ))) {
+					cout << "Sorry, but an inaccuracy was found in the file provided for reading. The DAY of the deadline for the task \"" << name << "\" should be from 1 to "<< check_correct_day((time / 10000), ((time / 100) % 100)) <<". Please correct the error in the file or provide another file for reading." << endl;
+					break;
+				}  
 
 				//tmp.clear();
 				//getline(file, tmp);
@@ -329,30 +602,45 @@ int main() {
 					tmp.clear();
 					getline(file, tmp, ' ');
 					for_time = atoi(tmp.c_str());
+					if (!(check_int(for_time, tmp)) || for_time>31) {
+						cout << "Sorry, but an inaccuracy was found in the file provided for reading. The DAY of the period for the task \"" << name << "\" should be from 1 to 31. Please correct the error in the file or provide another file for reading." << endl;
+						break;
+					}
 					period = for_time;
-					printf("\n\n%d\n", period);
 
 					skip(7, file);
 					tmp.clear();
 					getline(file, tmp, ' ');
 					for_time = atoi(tmp.c_str());
+					if (!(check_int(for_time, tmp)) || for_time > 12) {
+						cout << "Sorry, but an inaccuracy was found in the file provided for reading. The MONTH of the period for the task \"" << name << "\" should be from 1 to 12. Please correct the error in the file or provide another file for reading." << endl;
+						break;
+					}
 					period += for_time * 100;
 
 					skip(9, file);
 					tmp.clear();
 					getline(file, tmp);
 					for_time = atoi(tmp.c_str());
+					if (!(check_int(for_time, tmp)) || for_time > 9999) {
+						cout << "Sorry, but an inaccuracy was found in the file provided for reading. The YEAR of the period for the task \"" << name << "\" should be from 1 to 9999. Please correct the error in the file or provide another file for reading." << endl;
+						break;
+					}
 					period += for_time * 10000;
+
 					skip(8, file);
+
 					tp = new Task_period(name, data, importance, time, period);
 					//tp->print();
 					sch.add(tp);
 				}
 			}
+			printf("\nSuccessfully completed.\n");
 			break;}
 		case 3: {
 			printf("\nDatabase:\n");
 			sch.show();
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 11: {
 			printf("\ninput name of file\n");
@@ -363,9 +651,11 @@ int main() {
 				getline(cin, name);
 			}
 			sch.show_file(name);
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 6: {
 			sch.delete_all_tree();
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 5: {
 			printf("\ninput name of task to delete\n");
@@ -376,6 +666,7 @@ int main() {
 				getline(cin, name);
 			}
 			sch.delete_one_task(name);
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 4: {
 			printf("\ninput name of task to print\n");
@@ -389,6 +680,7 @@ int main() {
 			sch.search(name, result_of_search);
 			if (result_of_search != nullptr) result_of_search->print();
 			else printf("Task with this name not found\n");
+			printf("\nSuccessfully completed.\n");
 			break; }
 
 
@@ -409,6 +701,7 @@ int main() {
 			printf("\nenter how long do you want to extend\n");
 			i = input_time_period(0);
 			if(!(result_of_search->extension(i))) printf("\nThe deadline for completing the task cannot be extended. After the extension, the year becomes a five-digit number. The program only works over the years, which are four-digit numbers.\n");
+			printf("\nSuccessfully completed.\n");
 			break; }
 
 		case 12: {
@@ -420,6 +713,7 @@ int main() {
 				getline(cin, name);
 			}
 			sch.perform(name);
+			printf("\nSuccessfully completed.\n");
 			break; }
 
 		case 7: {
@@ -440,6 +734,7 @@ int main() {
 			printf("\ninput new importance\n");
 			while (!(get_int(&i))) printf("Wrong input. Enter a positive integer or 0.");
 			result_of_search->change_imp(i);
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 8: {
 			sch.print_first();
@@ -453,6 +748,7 @@ int main() {
 				getline(cin, name);
 			}
 			sch.print_first_file(name);
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 9: { return 0; break; }
 		case 14: {
@@ -473,6 +769,7 @@ int main() {
 			printf("\ninput new time\n");
 			i = input_time();
 			result_of_search->change_time(i);
+			printf("\nSuccessfully completed.\n");
 			break; }
 		case 15: {
 			printf("\ninput name of task\n");
@@ -492,6 +789,8 @@ int main() {
 			printf("\ninput new period\n");
 			i = input_time_period(0);
 			if (!(result_of_search->change_period(i))) printf("This task is not periodic, therefore its period cannot be changed.");
+				
+			printf("\nSuccessfully completed.\n");
 			break; }
 	   
 	    case 16: {
@@ -517,10 +816,11 @@ int main() {
 			   getline(cin, data);
 		   }
 		   result_of_search->change_data(data);
+		   printf("\nSuccessfully completed.\n");
 		   break; }
 		case 17: {
 			printf("Welcome to the scheduler mode.\n\nHere you can enter the name of the tasks, their beginning and end, and get a list of the maximum number of tasks that you can attend from the entered list without crossing the time.\n");
-
+			scheduler_mode();
 			break; }
 	   }
 	
