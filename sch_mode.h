@@ -60,6 +60,13 @@ public:
 		mmSched.clear();
 	};
 
+	bool check_name_mode(const string& name_task) {
+		multimap <int, shared_ptr<Sched>> ::iterator it = mmSched.end();
+		if (!(search(name_task, it))) {
+			return true;
+		}
+		else return false;
+	};
 
 	void delete_one_sch(const string& name_task) {
 

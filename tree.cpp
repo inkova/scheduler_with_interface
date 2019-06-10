@@ -39,7 +39,7 @@ void Scheduler::add (Node*& scheduler_top, Task* task) {
 
 		}
 
-		else if (*(task) > *(scheduler_top->task)) {   // аналогично с левым
+		else if (*(task) >= *(scheduler_top->task)) {   // аналогично с левым
 
 			if (scheduler_top->right != nullptr && scheduler_top->is_right_thread == false)
 				add(scheduler_top->right, task);
@@ -65,6 +65,7 @@ void Scheduler::add (Node*& scheduler_top, Task* task) {
 
 void Scheduler::show () {
 	Node* scheduler_top = this->scheduler_top;
+	//printf("\n%d\n", scheduler_top);
 	if (scheduler_top == nullptr) {
 		cout << "\nThere are no tasks in the scheduler.\n";
 		return;
@@ -206,19 +207,19 @@ void Scheduler:: delete_all_tree (Node*& scheduler_top) {
 		}
 }
 
-void Scheduler::delete_one_task(const string& name_task) {
+void Scheduler::delete_one_task(Node*& scheduler_top, const string& name_task) {
 	Node * task_to_delete = nullptr;
-	Node* scheduler_top = this->scheduler_top;
+	//Node* scheduler_top = this->scheduler_top;
 
 	search_to_delete(scheduler_top, name_task, task_to_delete);
 	if (task_to_delete == nullptr) {
 		cout << "\nTask with name " << name_task << " not found." << endl;
 		return;
 	}
-	delete_one_node(task_to_delete);
+	delete_one_node(scheduler_top, task_to_delete);
 }
 
-void  Scheduler::delete_one_node(Node *& task_to_delete){
+void  Scheduler::delete_one_node(Node*& scheduler_top, Node *& task_to_delete){
 	Node* tmp = nullptr;
 
 	 if (task_to_delete->left == nullptr && task_to_delete->right == nullptr) {   // только голова
@@ -280,12 +281,25 @@ void  Scheduler::delete_one_node(Node *& task_to_delete){
 			task_to_delete->left->is_right_thread = false;
 		}
 		tmp = task_to_delete;   //чтобы получить указатель на родителя, нужно пройти в самый левый лист поддерева, который и указывает чере прошивку на родителя
-		while (tmp->is_left_thread == false) { // переходим в самый левый лист
+		while (tmp->is_left_thread == false && tmp->left != nullptr) { // переходим в самый левый лист
 			tmp = tmp->left;
 		}
-
+		if (tmp->left != nullptr) {
 		tmp->left->right = task_to_delete->left;
 		delete task_to_delete;
+		}
+		else
+		{
+			scheduler_top = task_to_delete->left;
+			tmp = task_to_delete->left;
+			while (tmp->is_right_thread == false) { // переходим в самый правый лист
+				tmp = tmp->right;
+			}
+			tmp->right = nullptr;
+			tmp->is_right_thread = false;
+			delete task_to_delete;
+
+		}
 	}
 
 	else if (task_to_delete->right != nullptr && !(task_to_delete->is_right_thread) && task_to_delete->left == nullptr) { // справо поддерево, слево нулевой
@@ -294,12 +308,25 @@ void  Scheduler::delete_one_node(Node *& task_to_delete){
 			task_to_delete->right->is_left_thread = false;
 		}
 		tmp = task_to_delete;   //чтобы получить указатель на родителя, нужно пройти в самый правый лист поддерева, который и указывает через прошивку на родителя
-		while (tmp->is_right_thread == false) { // переходим в самый правый лист
+		while (tmp->is_right_thread == false && tmp->right != nullptr) { // переходим в самый правый лист
 			tmp = tmp->right;
 		}
-
-		tmp->right->left = task_to_delete->right;
-		delete task_to_delete;
+		if (tmp->right != nullptr) {
+			tmp->right->left = task_to_delete->right;
+			delete task_to_delete;
+		}
+		else
+		{
+			scheduler_top = task_to_delete->right;
+			tmp = task_to_delete->right;
+			while (tmp->is_left_thread == false) { // переходим в самый левый лист
+				tmp = tmp->left;
+			}
+			tmp->left = nullptr;
+			tmp->is_left_thread = false;
+			delete task_to_delete;
+			
+		}
 	}
 	else { //обе ветви имеют поддеревья, тогда замещаем удаляемый на самый левый правого поддерева	
 		tmp = task_to_delete->right;
@@ -308,7 +335,7 @@ void  Scheduler::delete_one_node(Node *& task_to_delete){
 		}
 		delete task_to_delete->task;
 		task_to_delete->task = tmp->task->clone();
-		delete_one_node (tmp);
+		delete_one_node (scheduler_top, tmp);
 	}
 	return;
 }

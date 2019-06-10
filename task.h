@@ -127,5 +127,9 @@ public:
 		bool operator ==(const Task &t) const {
 			return time == t.time;
 		}
+
+		bool operator >=(const Task &t) const {
+			return time >= t.time;
+		}
 };
 #endif
